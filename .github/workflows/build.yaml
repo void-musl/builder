@@ -1,0 +1,109 @@
+name: Production Build
+run-name: Build by @${{ github.actor }} (crave=${{ inputs.crave }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      crave:
+        description: 'Select crave status'
+        required: true
+        type: choice
+        options:
+          - inactive
+          - active
+        default: 'inactive'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  pre-flight-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for active crave runs
+        if: inputs.crave == 'active'
+        uses: void-musl/crave-checker@main
+        with:
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.run_id }}
+
+  start-runner:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tmux
+
+      # Download and configure 'crave'.
+    - name: Configure the 'crave' environment
+      run: |
+        echo "DCDEVSPACE status: ${DCDEVSPACE}"
+        if [[ $DCDEVSPACE == *1* ]]; then
+        echo 'No need to set up crave, we are already running in devspace!'
+        else
+          mkdir ${HOME}/bin/
+          curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+          mv ${PWD}/crave ${HOME}/bin/
+          sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave
+          envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
+          rm -rf ${PWD}/crave.conf.sample          
+        fi
+      env:
+        CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
+        CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+
+    - name: Run crave devspace
+      run: |
+        crave ${{ secrets.CRAVE_FLAGS }} devspace -- "echo "Looking for runner..."
+          # Look for whether there's a runner folder set up
+          if [ -f actions-runner/run.sh ] ; then
+            echo "Runner found! Restarting it..."
+          else
+            echo "Error! Runner not found!"
+            exit 1
+          fi
+
+        if tmux has-session -t ghactions; then 
+          echo "Runner is already Running" 
+        else 
+          tmux kill-session -t ghactions;
+          tmux new-session -d -s ghactions 
+          tmux send-keys -t ghactions './actions-runner/run.sh' Enter 
+          echo "Runner Started"
+        fi "
+        
+  prepare:
+    name: Prepare for Building
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check-out to repository
+      uses: actions/checkout@v4
+
+    - name: Check Credentials
+      run: |
+        if [[ -z "${{ secrets.CRAVE_TOKEN }}" || -z "${{ secrets.CRAVE_USERNAME }}" ]]; then
+          echo "Crave Credentials Not Configured! Exiting..."
+          exit 1
+        fi
+
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+      - name: Config
+        run: |
+          sudo apt install git curl
+          mkdir ~/work_dir
+      - name: Init
+        run: |
+          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
+          sudo chmod +x origin-setup.sh
+          sudo bash origin-setup.sh
+        working-directory: ~/work_dir
+        
