@@ -1,7 +1,6 @@
+#!/bin/bash
 # Copyright (C) 2024-2025 Souhrud Reddy
 # SPDX-License-Identifier: Apache-2.0
-
-#!/bin/bash
 
 #Zip download
 rm -rf actions-runner || true
