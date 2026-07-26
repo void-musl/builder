@@ -103,6 +103,16 @@ jobs:
     needs: prepare-for-crave
     name: Build (Crave)
     runs-on: self-hosted
+    container:
+      image: ghcr.io/void-linux/void-musl-full
+      options: --privileged
+      
+    env:
+      ARCH: x86_64-musl
+      BOOTSTRAP: x86_64-musl
+      TEST: 0
+      XBPS_ALLOW_CHROOT_BREAKOUT: yes
+      
     steps:
       - name: Config
         run: |
