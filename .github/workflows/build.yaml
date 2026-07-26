@@ -29,6 +29,7 @@ jobs:
           run_id: ${{ github.run_id }}
 
   start-runner:
+    needs: pre-flight-check
     runs-on: ubuntu-latest
 
     steps:
@@ -79,6 +80,7 @@ jobs:
         fi "
         
   prepare:
+    needs: start-runner
     name: Prepare for Building
     runs-on: ubuntu-latest
     steps:
@@ -93,6 +95,7 @@ jobs:
         fi
 
   build:
+    needs: prepare
     name: Build
     runs-on: self-hosted
     steps:
