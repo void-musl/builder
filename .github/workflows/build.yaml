@@ -81,7 +81,7 @@ jobs:
           echo "Runner Started"
         fi "
         
-  prepare:
+  prepare-for-crave:
     needs: start-runner
     name: Prepare for Building
     runs-on: ubuntu-latest
@@ -96,17 +96,19 @@ jobs:
           exit 1
         fi
 
-  build:
-    needs: prepare
-    name: Build
+  crave-build:
+    if: ${{ inputs.crave == 'active' }}
+    needs: prepare-for-crave
+    name: Build (Crave)
     runs-on: self-hosted
     steps:
       - name: Config
         run: |
           sudo apt install git curl
-          mkdir /crave-devspaces/actions-runner/_work/builder/builder/work_dir
+          mkdir -p /crave-devspaces/actions-runner/_work/builder/builder/work_dir || true
       - name: Init
         run: |
+          rm -rv origin-setup.sh || true
           curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
           sudo chmod +x origin-setup.sh
           sudo bash origin-setup.sh
