@@ -104,11 +104,11 @@ jobs:
       - name: Config
         run: |
           sudo apt install git curl
-          mkdir ~/work_dir
+          mkdir /crave-devspaces/actions-runner/_work/builder/builder/work_dir
       - name: Init
         run: |
           curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
           sudo chmod +x origin-setup.sh
           sudo bash origin-setup.sh
-        working-directory: ~/work_dir
+        working-directory: /crave-devspaces/actions-runner/_work/builder/builder/work_dir
         
