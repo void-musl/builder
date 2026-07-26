@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   pre-flight-check:
+    name: Check
     runs-on: ubuntu-latest
     steps:
       - name: Check for active crave runs
@@ -29,6 +30,7 @@ jobs:
           run_id: ${{ github.run_id }}
 
   start-runner:
+    name: Runner starter
     needs: pre-flight-check
     runs-on: ubuntu-latest
 
