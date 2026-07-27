@@ -155,4 +155,5 @@ jobs:
 
       - name: Test queue
         run: |
-          crave run --projectID 93 --no-patch -- "export ID='${TG_MSG_ID}'; curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash" 2>&1 | tee "$LOG_FILE"
+          crave run --projectID 93 --no-patch -- "curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash"
+        working-directory: /crave-devspaces/actions-runner/_work/builder/builder/work_dir
