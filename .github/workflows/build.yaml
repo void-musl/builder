@@ -112,48 +112,12 @@ jobs:
         working-directory: /crave-devspaces/actions-runner
       - name: Make directory
         run: |
-          mkdir -p /crave-devspaces/actions-runner/_work/builder/builder/work_dir || true
+          mkdir -p /crave-devspaces/actions-runner/_work/builder || true
         shell: bash
 
       - name: Origin setup
         run: |
-          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
-          chmod +x origin-setup.sh
-          bash origin-setup.sh
-          rm -rv origin-setup.sh
+          crave clone create --projectID 93 . || true
+          ls -lr
         shell: bash
-        working-directory: /crave-devspaces/actions-runner/_work/builder/builder/work_dir 
-        
-  crave-build:
-    if: ${{ inputs.crave == 'active' }}
-    needs: prepare-inside-crave
-    name: Build (Crave)
-    runs-on: self-hosted
-      
-    steps:
-      - name: Echo
-        run: |
-          echo 'from crave runner (musl)'
-        shell: bash
-        
-      - name: Configure the 'crave' environment
-        run: |
-          echo "DCDEVSPACE status: ${DCDEVSPACE}"
-          if [[ $DCDEVSPACE == *1* ]]; then
-          echo 'No need to set up crave, we are already running in devspace!'
-          else
-            mkdir ${HOME}/bin/
-            curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
-            mv ${PWD}/crave ${HOME}/bin/
-            sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave
-            envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
-            rm -rf ${PWD}/crave.conf.sample          
-          fi
-        env:
-          CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
-          CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
-
-      - name: Test queue
-        run: |
-          crave run --projectID 93 --no-patch -- "curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash"
-        working-directory: /crave-devspaces/actions-runner/_work/builder/builder/work_dir
+        working-directory: /crave-devspaces/actions-runner/_work/builder
