@@ -109,22 +109,26 @@ jobs:
           bash fastfetch.sh
           rm -rv fastfetch.sh
         shell: bash
-        working-directory: /crave-devspaces/actions-runner 
+        working-directory: /crave-devspaces/actions-runner
+      - name: Make directory
+        run: |
+          mkdir -p /crave-devspaces/actions-runner/_work/builder/builder/work_dir || true
+        shell: bash
+
+      - name: Origin setup
+        run: |
+          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
+          chmod +x origin-setup.sh
+          bash origin-setup.sh
+          rm -rv origin-setup.sh
+        shell: bash
+        working-directory: /crave-devspaces/actions-runner/_work/builder/builder/work_dir 
         
   crave-build:
     if: ${{ inputs.crave == 'active' }}
     needs: prepare-inside-crave
     name: Build (Crave)
     runs-on: self-hosted
-    container:
-      image: ghcr.io/void-linux/void-musl-full
-      options: --privileged
-      
-    env:
-      ARCH: x86_64-musl
-      BOOTSTRAP: x86_64-musl
-      TEST: 0
-      XBPS_ALLOW_CHROOT_BREAKOUT: yes
       
     steps:
       - name: Echo
@@ -132,3 +136,23 @@ jobs:
           echo 'from crave runner (musl)'
         shell: bash
         
+      - name: Configure the 'crave' environment
+        run: |
+          echo "DCDEVSPACE status: ${DCDEVSPACE}"
+          if [[ $DCDEVSPACE == *1* ]]; then
+          echo 'No need to set up crave, we are already running in devspace!'
+          else
+            mkdir ${HOME}/bin/
+            curl -s https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+            mv ${PWD}/crave ${HOME}/bin/
+            sudo ln -sf /home/${USER}/bin/crave /usr/bin/crave
+            envsubst < ${PWD}/crave.conf.sample >> ${PWD}/crave.conf
+            rm -rf ${PWD}/crave.conf.sample          
+          fi
+        env:
+          CRAVE_USERNAME: ${{  secrets.CRAVE_USERNAME  }}
+          CRAVE_TOKEN: ${{  secrets.CRAVE_TOKEN  }}
+
+      - name: Test queue
+        run: |
+          crave run --projectID 93 --no-patch -- "export ID='${TG_MSG_ID}'; curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash" 2>&1 | tee "$LOG_FILE"
