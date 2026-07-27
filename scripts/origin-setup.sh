@@ -1,5 +1,5 @@
 #!/bin/env bash
-rm -rf .git
-git init
+sudo rm -rf .git
+sudo git init
 
-git remote add -t lineage-22.1 origin https://github.com/accupara/los22
+sudo git remote add -t lineage-22.1 origin https://github.com/accupara/los22
