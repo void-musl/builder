@@ -104,16 +104,13 @@ jobs:
     steps:
       - name: Install docker
         run: |
-          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/docker-setup.sh
-          chmod +x docker-setup.sh
-          bash docker-setup.sh
-          rm -rv docker-setup.sh
+          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/fastfetch.sh
         shell: bash
         working-directory: /crave-devspaces/actions-runner 
         
   crave-build:
     if: ${{ inputs.crave == 'active' }}
-    needs: prepare-for-crave
+    needs: prepare-inside-crave
     name: Build (Crave)
     runs-on: self-hosted
     container:
