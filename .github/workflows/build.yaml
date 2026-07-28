@@ -110,14 +110,15 @@ jobs:
           rm -rv fastfetch.sh
         shell: bash
         working-directory: /crave-devspaces/actions-runner
-      - name: Make directory
-        run: |
-          mkdir -p /crave-devspaces/actions-runner/_work/builder || true
-        shell: bash
 
-      - name: Origin setup
+  crave-build:
+    if: inputs.crave == 'active'
+    needs: prepare-inside-crave
+    runs-on: self-hosted
+    name: Build (Crave)
+    steps:
+      - name: Main
         run: |
-          crave clone create --projectID 93 . || true
-          ls -lr
+          crave run --projectID 93 --no-patch -- "curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash"
         shell: bash
-        working-directory: /crave-devspaces/actions-runner/_work/builder
+        working-directory: /crave-devspaces/actions-runner/_work/builder/los
