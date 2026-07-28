@@ -117,8 +117,13 @@ jobs:
     runs-on: self-hosted
     name: Build (Crave)
     steps:
+      - name: Run Build Script in Docker
+        env:
+          PRIV_KEY: ${{ secrets.PRIV_KEY }}
+        run: |
+
       - name: Main
         run: |
-          crave run --projectID 93 --no-patch -- "curl -sf https://raw.githubusercontent.com/project-creek/crave/creek/crave_run.sh | bash"
+          crave run --projectID 93 --no-patch -- "curl -sf https://raw.githubusercontent.com/void-musl/builder/main/scripts/docker.sh | bash"
         shell: bash
         working-directory: /crave-devspaces/actions-runner/_work/builder/los
