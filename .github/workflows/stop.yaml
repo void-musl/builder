@@ -1,4 +1,4 @@
-name: Production Build
+name: Stop
 
 on:
   workflow_dispatch:
