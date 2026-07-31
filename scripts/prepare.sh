@@ -1,4 +1,4 @@
-curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/build.sh
+curl -LO https://raw.githubusercontent.com/voiz-linux/builder/main/scripts/build.sh
 
 docker run --rm \
   --privileged \
@@ -8,5 +8,5 @@ docker run --rm \
   -e TEST=0 \
   -e XBPS_ALLOW_CHROOT_BREAKOUT=yes \
   -e PRIV_KEY="$PRIV_KEY" \
-  ghcr.io/void-linux/void-musl-full \
+  ghcr.io/void-linux/voiz-linux-full \
   /bin/bash build.sh

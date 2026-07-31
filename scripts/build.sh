@@ -36,7 +36,7 @@ mkdir -p etc
 echo -e "XBPS_CHROOT_CMD=ethereal\nXBPS_MIRROR=https://repo-fastly.voidlinux.org/current" >> etc/conf
 ln -s / masterdir
 
-git clone --depth=1 https://github.com/void-musl/void-packages.git ../musl-packages
+git clone --depth=1 https://github.com/voiz-linux/void-packages.git ../musl-packages
 echo "Merging templates..."
 cp -rv ../musl-packages/srcpkgs/ayugram-desktop srcpkgs/
 

@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Check for active crave runs
         if: inputs.crave == 'active'
-        uses: void-musl/crave-checker@main
+        uses: voiz-linux/crave-checker@main
         with:
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           run_id: ${{ github.run_id }}
@@ -102,7 +102,7 @@ jobs:
           mkdir ~/work_dir
       - name: Init
         run: |
-          curl -LO https://raw.githubusercontent.com/void-musl/builder/main/scripts/origin-setup.sh
+          curl -LO https://raw.githubusercontent.com/voiz-linux/builder/main/scripts/origin-setup.sh
           sudo chmod +x origin-setup.sh
           sudo bash origin-setup.sh
         working-directory: ~/work_dir
