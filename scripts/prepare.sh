@@ -1,6 +1,6 @@
 curl -LO https://raw.githubusercontent.com/voiz-linux/builder/main/scripts/build.sh
 
-docker run --rm \
+podman run --rm \
   --privileged \
   -v "$PWD":/workspace \
   -e ARCH=x86_64-musl \
