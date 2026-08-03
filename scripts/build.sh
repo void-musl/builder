@@ -5,26 +5,38 @@ echo "Starting Build..."
 
 echo "Configuring mirrors..."
 mkdir -p /etc/xbps.d
-cp /usr/share/xbps.d/*-repository-*.conf /etc/xbps.d/
-sed -i 's|https://repo-default.voidlinux.org|https://repo-fastly.voidlinux.org|g' /etc/xbps.d/*-repository-*.conf
+
+for conf in /usr/share/xbps.d/*-repository-*.conf; do
+    if [ -f "$conf" ]; then
+        cp "$conf" /etc/xbps.d/
+    fi
+done
+
+if ls /etc/xbps.d/*-repository-*.conf 1> /dev/null 2>&1; then
+    sed -i 's|https://repo-default.voidlinux.org|https://repo-fastly.voidlinux.org|g' /etc/xbps.d/*-repository-*.conf
+fi
+
 xbps-install -S
 
 echo "Installing dependencies..."
 xbps-install -Syu xbps
 xbps-install -yu
-xbps-install -y nodejs-lts git curl base-devel bash jq
+xbps-install -y git curl base-devel bash jq
 
 ls -lr
-pwd
+
+DIR=$(pwd)
 
 remove=(
-    void-packages
-    musl-packages
+    "void-packages"
+    "musl-packages"
 )
 
 for FILE in "${remove[@]}"; do
-    [ -e "$FILE" ] && echo "    Removing: $FILE"
-    rm -rf "$FILE"
+    if [ -e "$FILE" ]; then
+        echo "    Removing: $FILE"
+        rm -rf "$FILE"
+    fi
 done
 
 echo "Cloning void-packages..."
@@ -47,18 +59,17 @@ echo "Signing and indexing..."
 cd hostdir/binpkgs
 
 if [ -n "$PRIV_KEY" ]; then
-    echo "$PRIV_KEY" > private.pem
+    printf "%s\n" "$PRIV_KEY" > private.pem
+    chmod 600 private.pem
+    
     xbps-rindex -a *.xbps
-    xbps-rindex -s --signedby "anrix <iz@anrix.org>" --privkey private.pem $PWD
+    xbps-rindex -s --signedby "anrix <iz@anrix.org>" --privkey private.pem "$PWD"
     xbps-rindex -S --privkey private.pem *.xbps
+    
     rm private.pem
 else
     echo "Warning: PRIV_KEY not provided. Packages will not be signed."
     xbps-rindex -a *.xbps
 fi
 
-echo "Exporting artifacts..."
-mkdir -p /workspace/output
-mv *.xbps *.sig2 *-repodata /workspace/output/ || true
-
-echo "Build complete! Artifacts are in the /workspace/output directory."
+echo "Build complete!"
