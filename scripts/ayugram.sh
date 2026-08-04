@@ -27,4 +27,4 @@ echo "Configuring network..."
 sudo cp /etc/resolv.conf "${CHROOT_DIR}/etc/"
 
 echo "Entering chroot to execute build script..."
-sudo chroot "$CHROOT_DIR" /bin/sh -c 'curl -sf https://raw.githubusercontent.com/voiz-linux/builder/main/scripts/build.sh | bash'
+sudo chroot "$CHROOT_DIR" /bin/sh -c 'xbps-install -Syu xbps && xbps-install -Syu && xbps-install -Sy curl bash && curl -sf https://raw.githubusercontent.com/voiz-linux/builder/main/scripts/build.sh | bash'
