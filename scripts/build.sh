@@ -53,8 +53,21 @@ echo "Merging templates..."
 cp -rv ../musl-packages/srcpkgs/ayugram-desktop srcpkgs/
 
 
-echo "Fixing device node permissions for chroot..."
-chmod 666 /dev/null /dev/zero /dev/random /dev/urandom
+echo "Preparing chroot environment..."
+# Attempt to mount essential virtual filesystems (fixes nproc and device nodes)
+mount -t proc proc /proc 2>/dev/null || true
+mount -t sysfs sys /sys 2>/dev/null || true
+mount -t devtmpfs dev /dev 2>/dev/null || true
+
+echo "Ensuring essential device nodes exist..."
+# If mounting devtmpfs failed/was restricted, manually create the missing nodes
+[ -e /dev/null ]    || mknod -m 666 /dev/null c 1 3 2>/dev/null || true
+[ -e /dev/zero ]    || mknod -m 666 /dev/zero c 1 5 2>/dev/null || true
+[ -e /dev/random ]  || mknod -m 666 /dev/random c 1 8 2>/dev/null || true
+[ -e /dev/urandom ] || mknod -m 666 /dev/urandom c 1 9 2>/dev/null || true
+
+# Force permissions and ignore errors to prevent set -e from killing the script
+chmod 666 /dev/null /dev/zero /dev/random /dev/urandom 2>/dev/null || true
 
 echo "Creating unprivileged build user with sudo access..."
 # Create the user and add them to the 'wheel' group
@@ -67,6 +80,7 @@ echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-nopasswd
 chmod 0440 /etc/sudoers.d/wheel-nopasswd
 
 echo "Building package..."
+# Now that /proc is likely mounted, nproc should work reliably
 CORES=$(nproc 2>/dev/null || echo 4)
 
 # Run the xbps-src command as the builder user
