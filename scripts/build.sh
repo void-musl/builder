@@ -52,13 +52,25 @@ git clone --depth=1 https://github.com/voiz-linux/void-packages.git ../musl-pack
 echo "Merging templates..."
 cp -rv ../musl-packages/srcpkgs/ayugram-desktop srcpkgs/
 
-echo "Creating unprivileged build user..."
-useradd -m builder
 
+echo "Fixing device node permissions for chroot..."
+chmod 666 /dev/null /dev/zero /dev/random /dev/urandom
+
+echo "Creating unprivileged build user with sudo access..."
+# Create the user and add them to the 'wheel' group
+useradd -m -G wheel builder 2>/dev/null || true
 chown -R builder:builder .
 
+# Configure passwordless sudo for the wheel group
+mkdir -p /etc/sudoers.d
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-nopasswd
+chmod 0440 /etc/sudoers.d/wheel-nopasswd
+
 echo "Building package..."
-su builder -c "/bin/bash ./xbps-src -j$(nproc) pkg ayugram-desktop"
+CORES=$(nproc 2>/dev/null || echo 4)
+
+# Run the xbps-src command as the builder user
+su builder -c "/bin/bash ./xbps-src -j$CORES pkg ayugram-desktop"
 
 echo "Signing and indexing..."
 cd hostdir/binpkgs
