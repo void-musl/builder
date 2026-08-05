@@ -52,8 +52,13 @@ git clone --depth=1 https://github.com/voiz-linux/void-packages.git ../musl-pack
 echo "Merging templates..."
 cp -rv ../musl-packages/srcpkgs/ayugram-desktop srcpkgs/
 
+echo "Creating unprivileged build user..."
+useradd -m builder
+
+chown -R builder:builder .
+
 echo "Building package..."
-/bin/bash ./xbps-src -j$(nproc) pkg ayugram-desktop
+su builder -c "/bin/bash ./xbps-src -j$(nproc) pkg ayugram-desktop"
 
 echo "Signing and indexing..."
 cd hostdir/binpkgs
